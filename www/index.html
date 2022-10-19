@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>App</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
+      width: 100vw;
+      height: 100vh;
+      display: grid;
+      place-items: center;
+    }
+  </style>
+</head>
+
+<body>
+  <canvas id="canvas" width="800" height="600"></canvas>
+  <script type="module">
+    import { sysjs } from './sysjs.js'
+    import setupWasmserve from './wasmserve.js'
+    setupWasmserve()
+
+    window.memory = null
+
+    fetch("app.wasm")
+      .then(response => response.arrayBuffer())
+      .then(buffer => WebAssembly.instantiate(buffer, { sysjs }))
+      .then(results => results.instance)
+      .then(instance => {
+        window.memory = instance.exports.memory
+        sysjs.init(instance)
+        instance.exports.callMain()
+      })
+      .catch(err => console.error(err))
+  </script>
+</body>
+
+</html>
