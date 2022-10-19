@@ -5,6 +5,7 @@ Paradise is a wasm first game engine written in zig.
 # Architecture
 
 All images are embedded qoi images.
+
 Keep engine as simple as possible.
 
 # TODO
@@ -14,6 +15,8 @@ Find a way to fetch resources (not embed). We should wait for zig async/await in
 Find js object/function/string leaks.
 
 Port to other platforms (not now).
+
+Add audio engine.
 
 # Usage
 
@@ -73,10 +76,12 @@ pub fn main() !void {
 }
 ```
 
-see main.zig
+see **src/main.zig**
 
 # Credits
 
 https://github.com/hexops/mach - for sysjs, for wasmserve
+
 https://github.com/ziglibs/zlm - vector math
+
 https://github.com/MasterQ32/zig-qoi - for image loading
