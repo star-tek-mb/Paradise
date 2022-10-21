@@ -96,13 +96,15 @@ pub const Shader = struct {
 pub const Sprite = struct {
     texture: Texture,
     texcoords: [4]f32,
-    x: f32,
-    y: f32,
+    x: f32 = 0.0,
+    y: f32 = 0.0,
     w: f32,
     h: f32,
-    r: f32,
-    ox: f32,
-    oy: f32,
+    r: f32 = 0.0,
+    ox: f32 = 0.0,
+    oy: f32 = 0.0,
+    flip_x: bool = false,
+    flip_y: bool = false,
 
     pub fn fromImage(image: Image) !Sprite {
         return try Sprite.fromSubImage(image, 0, 0, image.width, image.height);
@@ -125,6 +127,8 @@ pub const Sprite = struct {
         // origin at center
         sprite.ox = @intToFloat(f32, w) / 2.0;
         sprite.oy = @intToFloat(f32, h) / 2.0;
+        sprite.flip_x = false;
+        sprite.flip_y = false;
         return sprite;
     }
 };
@@ -190,7 +194,8 @@ pub const Renderer = struct {
         final = final.mul(zlm.Mat4.createScale(sprite.w, sprite.h, 1.0));
         final = final.mul(zlm.Mat4.createTranslationXYZ(-sprite.ox, -sprite.oy, 0.0));
         final = final.mul(zlm.Mat4.createAngleAxis(.{ .x = 0.0, .y = 0.0, .z = 1.0 }, sprite.r));
-        final = final.mul(zlm.Mat4.createTranslationXYZ(sprite.x + sprite.ox, sprite.y + sprite.oy, 0.0));
+        final = final.mul(zlm.Mat4.createTranslationXYZ(sprite.ox, sprite.oy, 0.0));
+        final = final.mul(zlm.Mat4.createTranslationXYZ(sprite.x, sprite.y, 0.0));
         final = final.mul(self.projection);
 
         // vector = vector x mvp
@@ -202,33 +207,33 @@ pub const Renderer = struct {
 
         self.data.append(vectors[0].x) catch unreachable;
         self.data.append(vectors[0].y) catch unreachable;
-        self.data.append(sprite.texcoords[0]) catch unreachable;
-        self.data.append(sprite.texcoords[1]) catch unreachable;
+        self.data.append(if (sprite.flip_x) 1.0 - sprite.texcoords[0] else sprite.texcoords[0]) catch unreachable;
+        self.data.append(if (sprite.flip_y) 1.0 - sprite.texcoords[1] else sprite.texcoords[1]) catch unreachable;
 
         self.data.append(vectors[1].x) catch unreachable;
         self.data.append(vectors[1].y) catch unreachable;
-        self.data.append(sprite.texcoords[2]) catch unreachable;
-        self.data.append(sprite.texcoords[1]) catch unreachable;
+        self.data.append(if (sprite.flip_x) 1.0 - sprite.texcoords[2] else sprite.texcoords[2]) catch unreachable;
+        self.data.append(if (sprite.flip_y) 1.0 - sprite.texcoords[1] else sprite.texcoords[1]) catch unreachable;
 
         self.data.append(vectors[2].x) catch unreachable;
         self.data.append(vectors[2].y) catch unreachable;
-        self.data.append(sprite.texcoords[0]) catch unreachable;
-        self.data.append(sprite.texcoords[3]) catch unreachable;
+        self.data.append(if (sprite.flip_x) 1.0 - sprite.texcoords[0] else sprite.texcoords[0]) catch unreachable;
+        self.data.append(if (sprite.flip_y) 1.0 - sprite.texcoords[3] else sprite.texcoords[3]) catch unreachable;
 
         self.data.append(vectors[3].x) catch unreachable;
         self.data.append(vectors[3].y) catch unreachable;
-        self.data.append(sprite.texcoords[2]) catch unreachable;
-        self.data.append(sprite.texcoords[3]) catch unreachable;
+        self.data.append(if (sprite.flip_x) 1.0 - sprite.texcoords[2] else sprite.texcoords[2]) catch unreachable;
+        self.data.append(if (sprite.flip_y) 1.0 - sprite.texcoords[3] else sprite.texcoords[3]) catch unreachable;
 
         self.data.append(vectors[1].x) catch unreachable;
         self.data.append(vectors[1].y) catch unreachable;
-        self.data.append(sprite.texcoords[2]) catch unreachable;
-        self.data.append(sprite.texcoords[1]) catch unreachable;
+        self.data.append(if (sprite.flip_x) 1.0 - sprite.texcoords[2] else sprite.texcoords[2]) catch unreachable;
+        self.data.append(if (sprite.flip_y) 1.0 - sprite.texcoords[1] else sprite.texcoords[1]) catch unreachable;
 
         self.data.append(vectors[2].x) catch unreachable;
         self.data.append(vectors[2].y) catch unreachable;
-        self.data.append(sprite.texcoords[0]) catch unreachable;
-        self.data.append(sprite.texcoords[3]) catch unreachable;
+        self.data.append(if (sprite.flip_x) 1.0 - sprite.texcoords[0] else sprite.texcoords[0]) catch unreachable;
+        self.data.append(if (sprite.flip_y) 1.0 - sprite.texcoords[3] else sprite.texcoords[3]) catch unreachable;
     }
 
     pub fn stop(self: *Renderer) void {

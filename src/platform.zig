@@ -77,8 +77,20 @@ fn update_js_func(_: sysjs.Object, _: u32, _: []sysjs.Value) sysjs.Value {
 fn key_down_js_func(args: sysjs.Object, _: u32, _: []sysjs.Value) sysjs.Value {
     var keyCode = args.getIndex(0).view(.object).get("keyCode").view(.num);
     var keyEventFnPoitner = @floatToInt(usize, sysjs.global().get("keydown_function").view(.num));
-    var keyEventFn = @intToPtr(KeyEventFn, keyEventFnPoitner);
-    keyEventFn(@floatToInt(u16, keyCode));
+    if (keyEventFnPoitner != 0) {
+        var keyEventFn = @intToPtr(KeyEventFn, keyEventFnPoitner);
+        keyEventFn(@floatToInt(u16, keyCode));
+    }
+    return sysjs.createUndefined();
+}
+
+fn key_up_js_func(args: sysjs.Object, _: u32, _: []sysjs.Value) sysjs.Value {
+    var keyCode = args.getIndex(0).view(.object).get("keyCode").view(.num);
+    var keyEventFnPoitner = @floatToInt(usize, sysjs.global().get("keyup_function").view(.num));
+    if (keyEventFnPoitner != 0) {
+        var keyEventFn = @intToPtr(KeyEventFn, keyEventFnPoitner);
+        keyEventFn(@floatToInt(u16, keyCode));
+    }
     return sysjs.createUndefined();
 }
 
@@ -88,13 +100,25 @@ pub fn init() void {
     var key_down_func_js = sysjs.createFunction(key_down_js_func, &.{});
     var key_down_string = sysjs.createString("keydown");
     defer key_down_string.deinit();
+    _ = sysjs.global().set("keydown_function", sysjs.createNumber(0.0));
     _ = sysjs.global().get("window").view(.object).call("addEventListener", &.{ key_down_string.toValue(), key_down_func_js.toValue() });
+
+    var key_up_func_js = sysjs.createFunction(key_up_js_func, &.{});
+    var key_up_string = sysjs.createString("keyup");
+    defer key_up_string.deinit();
+    _ = sysjs.global().set("keyup_function", sysjs.createNumber(0.0));
+    _ = sysjs.global().get("window").view(.object).call("addEventListener", &.{ key_up_string.toValue(), key_up_func_js.toValue() });
 }
 
-pub const KeyEventFn = *const fn(keycode: u16) void;
+pub const KeyEventFn = *const fn (keycode: u16) void;
 pub fn onKeyDown(func: KeyEventFn) void {
     var func_pointer = sysjs.createNumber(@intToFloat(f64, @ptrToInt(func)));
     _ = sysjs.global().set("keydown_function", func_pointer);
+}
+
+pub fn onKeyUp(func: KeyEventFn) void {
+    var func_pointer = sysjs.createNumber(@intToFloat(f64, @ptrToInt(func)));
+    _ = sysjs.global().set("keyup_function", func_pointer);
 }
 
 pub fn run(updateFn: UpdateFn) void {
