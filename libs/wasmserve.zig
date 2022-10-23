@@ -28,7 +28,7 @@ pub const Error = error{CannotOpenDirectory} || mem.Allocator.Error;
 
 pub fn serve(step: *build.LibExeObjStep, options: Options) Error!*Wasmserve {
     const self = try step.builder.allocator.create(Wasmserve);
-    const install_dir = options.install_dir orelse build.InstallDir{ .lib = {} };
+    const install_dir = options.install_dir orelse build.InstallDir{ .bin = {} };
     const install_dir_iter = fs.cwd().makeOpenPathIterable(step.builder.getInstallPath(install_dir, ""), .{}) catch
         return error.CannotOpenDirectory;
     self.* = Wasmserve{

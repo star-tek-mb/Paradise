@@ -2,10 +2,6 @@ const std = @import("std");
 const platform = @import("platform.zig");
 const paradise = @import("paradise.zig");
 
-comptime {
-    _ = platform;
-}
-
 pub const log = platform.log;
 pub const gl = platform.gl;
 

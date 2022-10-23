@@ -37,7 +37,7 @@
       .then(instance => {
         window.memory = instance.exports.memory
         sysjs.init(instance)
-        instance.exports.callMain()
+        instance.exports._start()
       })
       .catch(err => console.error(err))
   </script>

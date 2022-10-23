@@ -24,7 +24,7 @@ pub fn build(b: *std.build.Builder) !void {
     });
     const mode = b.standardReleaseOptions();
 
-    const exe = b.addSharedLibrary("app", "src/main.zig", .unversioned);
+    const exe = b.addExecutable("app", "src/main.zig");
     exe.setTarget(target);
     exe.setBuildMode(mode);
     exe.addPackage(zlm);

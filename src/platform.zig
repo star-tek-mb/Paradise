@@ -3,48 +3,6 @@ const sysjs = @import("sysjs");
 const root = @import("root");
 const Self = @This();
 
-comptime {
-    @export(callMain, .{ .name = "callMain" });
-}
-
-fn callMain() callconv(.C) u8 {
-    const bad_main_ret = "expected return type of main to be 'void', '!void', 'noreturn', 'u8', or '!u8'";
-    switch (@typeInfo(@typeInfo(@TypeOf(root.main)).Fn.return_type.?)) {
-        .NoReturn => {
-            root.main();
-        },
-        .Void => {
-            root.main();
-            return 0;
-        },
-        .Int => |info| {
-            if (info.bits != 8 or info.signedness == .signed) {
-                @compileError(bad_main_ret);
-            }
-            return root.main();
-        },
-        .ErrorUnion => {
-            const result = root.main() catch |err| {
-                std.log.err("{s}", .{@errorName(err)});
-                if (@errorReturnTrace()) |trace| {
-                    std.debug.dumpStackTrace(trace.*);
-                }
-                return 1;
-            };
-            switch (@typeInfo(@TypeOf(result))) {
-                .Void => return 0,
-                .Int => |info| {
-                    if (info.bits != 8 or info.signedness == .signed) {
-                        @compileError(bad_main_ret);
-                    }
-                    return result;
-                },
-                else => @compileError(bad_main_ret),
-            }
-        },
-        else => @compileError(bad_main_ret),
-    }
-}
 
 pub fn log(comptime level: std.log.Level, comptime scope: @TypeOf(.EnumLiteral), comptime format: []const u8, args: anytype) void {
     const level_txt = comptime level.asText();
