@@ -2,7 +2,9 @@ const std = @import("std");
 const platform = @import("platform.zig");
 const paradise = @import("paradise.zig");
 
-pub const log = platform.log;
+pub const std_options = struct {
+    pub const logFn = platform.log;
+};
 pub const gl = platform.gl;
 
 pub const Character = struct {

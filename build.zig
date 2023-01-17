@@ -22,14 +22,14 @@ pub fn build(b: *std.build.Builder) !void {
             .abi = .none,
         },
     });
-    const mode = b.standardReleaseOptions();
 
     const exe = b.addExecutable("app", "src/main.zig");
     exe.setTarget(target);
-    exe.setBuildMode(mode);
+    exe.setBuildMode(.ReleaseSmall);
     exe.addPackage(zlm);
     exe.addPackage(sysjs);
     exe.addPackage(qoi);
+    exe.export_symbol_names = &.{ "wasmCallFunction" };
     exe.install();
 
     const serve_step = try wasmserve.serve(exe, .{});
