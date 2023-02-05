@@ -1,19 +1,6 @@
 const std = @import("std");
 const wasmserve = @import("libs/wasmserve.zig");
 
-const zlm = std.build.Pkg{
-    .name = "zlm",
-    .source = .{ .path = "libs/zlm.zig" },
-};
-const sysjs = std.build.Pkg{
-    .name = "sysjs",
-    .source = .{ .path = "libs/sysjs.zig" },
-};
-const qoi = std.build.Pkg{
-    .name = "qoi",
-    .source = .{ .path = "libs/qoi.zig" },
-};
-
 pub fn build(b: *std.build.Builder) !void {
     const target = b.standardTargetOptions(.{
         .default_target = std.zig.CrossTarget{

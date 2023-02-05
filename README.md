@@ -10,11 +10,10 @@ Keep engine as simple as possible.
 
 # TODO
 
-Find a way to fetch resources (not embed). We should wait for zig async/await in stage2.
-
-Find js object/function/string leaks.
-
-Port to other platforms (not now).
+* Use package manager to fetch modules (priority)
+* Find a way to fetch resources (not embed). We should wait for zig async/await in stage2.
+* Find js object/function/string leaks.
+* Port to other platforms (not now).
 
 Add audio engine.
 
