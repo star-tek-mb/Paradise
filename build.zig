@@ -22,13 +22,17 @@ pub fn build(b: *std.build.Builder) !void {
             .abi = .none,
         },
     });
+    const optimize = b.standardOptimizeOption(.{});
 
-    const exe = b.addExecutable("app", "src/main.zig");
-    exe.setTarget(target);
-    exe.setBuildMode(.ReleaseSmall);
-    exe.addPackage(zlm);
-    exe.addPackage(sysjs);
-    exe.addPackage(qoi);
+    const exe = b.addExecutable(.{
+        .name = "app",
+        .root_source_file = .{ .path = "src/main.zig" },
+        .target = target,
+        .optimize = optimize,
+    });
+    exe.addAnonymousModule("zlm", .{ .source_file = .{ .path = "libs/zlm.zig" } });
+    exe.addAnonymousModule("sysjs", .{ .source_file = .{ .path = "libs/sysjs.zig" } });
+    exe.addAnonymousModule("qoi", .{ .source_file = .{ .path = "libs/qoi.zig" } });
     exe.export_symbol_names = &.{ "wasmCallFunction" };
     exe.install();
 
