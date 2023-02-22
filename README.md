@@ -2,6 +2,10 @@
 
 Paradise is a wasm first game engine written in zig.
 
+# Status
+
+Development stopped for now until zig stage2 async.
+
 # Architecture
 
 All images are embedded qoi images.

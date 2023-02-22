@@ -3,7 +3,6 @@ const sysjs = @import("sysjs");
 const root = @import("root");
 const Self = @This();
 
-
 pub fn log(comptime level: std.log.Level, comptime scope: @TypeOf(.EnumLiteral), comptime format: []const u8, args: anytype) void {
     const level_txt = comptime level.asText();
     const prefix2 = if (scope == .default) ": " else "(" ++ @tagName(scope) ++ "): ";
