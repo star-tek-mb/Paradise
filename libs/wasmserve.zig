@@ -3,7 +3,7 @@ const mime = @import("mime.zig");
 const net = std.net;
 const mem = std.mem;
 const fs = std.fs;
-const build = std.build;
+const build = std.Build;
 
 const www_dir_path = sdkPath("/../www");
 const buffer_size = 2048;
@@ -26,22 +26,22 @@ pub const Options = struct {
 
 pub const Error = error{CannotOpenDirectory} || mem.Allocator.Error;
 
-pub fn serve(step: *build.LibExeObjStep, options: Options) Error!*Wasmserve {
-    const self = try step.builder.allocator.create(Wasmserve);
+pub fn serve(step: *std.build.CompileStep, options: Options) Error!*Wasmserve {
+    const self = try step.step.owner.allocator.create(Wasmserve);
     const install_dir = options.install_dir orelse build.InstallDir{ .bin = {} };
-    const install_dir_iter = fs.cwd().makeOpenPathIterable(step.builder.getInstallPath(install_dir, ""), .{}) catch
+    const install_dir_iter = fs.cwd().makeOpenPathIterable(step.step.owner.getInstallPath(install_dir, ""), .{}) catch
         return error.CannotOpenDirectory;
     self.* = Wasmserve{
-        .step = build.Step.init(.run, "wasmserve", step.builder.allocator, Wasmserve.make),
-        .b = step.builder,
+        .step = build.Step.init(.{ .id = .run, .name = "wasmserve", .owner = step.step.owner, .makeFn = Wasmserve.make }),
+        .b = step.step.owner,
         .exe_step = step,
-        .install_step_name = options.install_step_name orelse step.builder.getInstallStep().name,
+        .install_step_name = options.install_step_name orelse step.step.owner.getInstallStep().name,
         .install_dir = install_dir,
         .install_dir_iter = install_dir_iter,
         .address = options.listen_address orelse net.Address.initIp4([4]u8{ 127, 0, 0, 1 }, 8080),
         .subscriber = null,
         .watch_paths = options.watch_paths orelse &.{"src"},
-        .mtimes = std.AutoHashMap(fs.File.INode, i128).init(step.builder.allocator),
+        .mtimes = std.AutoHashMap(fs.File.INode, i128).init(step.step.owner.allocator),
         .notify_msg = null,
         .build_per_stop_count = 0,
     };
@@ -50,10 +50,10 @@ pub fn serve(step: *build.LibExeObjStep, options: Options) Error!*Wasmserve {
 
 const Wasmserve = struct {
     step: build.Step,
-    b: *build.Builder,
-    exe_step: *build.LibExeObjStep,
+    b: *std.Build,
+    exe_step: *build.CompileStep,
     install_step_name: []const u8,
-    install_dir: build.InstallDir,
+    install_dir: std.build.InstallDir,
     install_dir_iter: fs.IterableDir,
     address: net.Address,
     subscriber: ?*net.StreamServer.Connection,
@@ -73,7 +73,7 @@ const Wasmserve = struct {
         data: []const u8,
     };
 
-    pub fn make(step: *build.Step) !void {
+    pub fn make(step: *build.Step, progress: *std.Progress.Node) !void {
         const self = @fieldParentPtr(Wasmserve, "step", step);
 
         self.compile();
@@ -90,7 +90,7 @@ const Wasmserve = struct {
                 self.install_dir,
                 file.name,
             );
-            try install_www.step.make();
+            try install_www.step.make(progress);
         }
 
         const watch_thread = try std.Thread.spawn(.{}, watch, .{self});
@@ -267,7 +267,7 @@ const Wasmserve = struct {
         std.log.info("Building...", .{});
         const res = std.ChildProcess.exec(.{
             .allocator = self.b.allocator,
-            .argv = &.{ self.b.zig_exe, "build", self.install_step_name, "--prominent-compile-errors", "--color", "on" },
+            .argv = &.{ self.b.zig_exe, "build", self.install_step_name, "--color", "on" },
         }) catch |err| {
             logErr(err, @src());
             return;
